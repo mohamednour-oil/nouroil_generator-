@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NourOil — مولد المحتوى الذكي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0c10;
+  --surface: #111318;
+  --surface2: #181c24;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --green: #00e5a0;
+  --green-dim: rgba(0,229,160,0.12);
+  --green-mid: rgba(0,229,160,0.25);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.1);
+  --red: #ff4d6d;
+  --text: #f0f2f5;
+  --text2: #8892a4;
+  --text3: #4a5568;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font: 'Cairo', sans-serif;
+  --mono: 'Space Mono', monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Ambient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -30%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0,229,160,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -20%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(245,166,35,0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container { max-width: 900px; margin: 0 auto; padding: 0 1.25rem 4rem; position: relative; z-index: 1; }
+
+/* Header */
+.header { padding: 2.5rem 0 2rem; text-align: center; }
+.logo-line { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+.logo-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,229,160,0.5)} 50%{box-shadow:0 0 0 8px rgba(0,229,160,0)} }
+.logo-text { font-family: var(--mono); font-size: 13px; color: var(--green); letter-spacing: 0.15em; text-transform: uppercase; }
+h1 { font-size: clamp(22px, 4vw, 34px); font-weight: 900; color: var(--text); margin-bottom: 8px; }
+h1 span { color: var(--green); }
+.sub { font-size: 14px; color: var(--text2); }
+
+/* Panel */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+.panel-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
+.panel-title::before { content: ''; width: 3px; height: 12px; background: var(--green); border-radius: 2px; }
+
+/* Grid controls */
+.controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; color: var(--text2); font-weight: 500; }
+select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238892a4' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
+}
+select:focus { outline: none; border-color: var(--green); }
+select option { background: #1a1f2b; }
+
+/* Sliders row */
+.sliders-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+.slider-field label { font-size: 11px; color: var(--text2); font-weight: 500; display: flex; justify-content: space-between; }
+.slider-field label span { color: var(--green); font-family: var(--mono); }
+input[type=range] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface2);
+  margin-top: 6px;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--bg);
+}
+
+/* Tone chips */
+.tone-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.tone-chip {
+  font-size: 12px; padding: 5px 12px; border-radius: 99px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); cursor: pointer; font-family: var(--font);
+  transition: all 0.15s;
+}
+.tone-chip.active, .tone-chip:hover { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
+/* Generate button */
+.gen-btn {
+  width: 100%; padding: 14px;
+  background: var(--green); color: #000;
+  font-family: var(--font); font-size: 15px; font-weight: 700;
+  border: none; border-radius: var(--radius-sm);
+  cursor: pointer; margin-top: 12px;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.gen-btn:hover { background: #00ffb0; transform: translateY(-1px); }
+.gen-btn:active { transform: translateY(0); }
+.gen-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+.gen-btn svg { width: 18px; height: 18px; }
+
+/* Output */
+.output-section { margin-top: 1.25rem; }
+.output-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: fadeUp 0.35s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+
+.output-topbar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.output-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.tag {
+  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+  font-family: var(--mono);
+}
+.tag-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,229,160,0.2); }
+.tag-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+.tag-gray { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--border); }
+
+.scores-row { display: flex; gap: 12px; }
+.score-item { display: flex; flex-direction: column; align-items: center; }
+.score-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+.score-value { font-size: 15px; font-weight: 700; font-family: var(--mono); }
+.score-viral { color: var(--green); }
+.score-retention { color: var(--amber); }
+
+.output-body { padding: 1.5rem; }
+.sec { margin-bottom: 1.4rem; }
+.sec-label {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.sec-text {
+  font-size: 14.5px; line-height: 1.8; color: var(--text);
+  white-space: pre-wrap;
+}
+.sec-hook .sec-text { font-size: 17px; font-weight: 600; color: var(--text); }
+
+.spinner-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.spinner-tag {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.spinner-tag .en { color: var(--green); font-family: var(--mono); font-weight: 700; }
+.spinner-tag .ar { color: var(--text2); font-size: 11px; }
+.spinner-tag .effect { color: var(--text3); font-size: 10px; }
+
+/* Action bar */
+.action-bar {
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.act-btn {
+  font-size: 12px; padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: transparent; color: var(--text2);
+  font-family: var(--font); cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  transition: all 0.15s;
+}
+.act-btn:hover { background: var(--surface2); color: var(--text); }
+.act-btn.success { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+.act-btn svg { width: 14px; height: 14px; }
+
+/* History */
+.history-section { margin-top: 1.5rem; }
+.history-title { font-size: 11px; color: var(--text3); margin-bottom: 8px; font-weight: 500; }
+.history-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.h-chip {
+  font-size: 12px; padding: 5px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); cursor: pointer;
+  transition: all 0.15s;
+}
+.h-chip:hover { border-color: var(--green); color: var(--green); }
+
+/* Spinner preview */
+.spinner-preview {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px; margin-top: 10px;
+}
+.sp-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+}
+.sp-en { font-family: var(--mono); font-size: 13px; color: var(--green); font-weight: 700; }
+.sp-ar { font-size: 13px; color: var(--text); margin: 2px 0; }
+.sp-effect { font-size: 11px; color: var(--text3); }
+
+.empty-state {
+  text-align: center; padding: 3rem 1rem;
+  border: 1px dashed var(--border2); border-radius: var(--radius);
+  color: var(--text3); font-size: 14px;
+}
+.empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.4; }
+
+.pending-state {
+  text-align: center; padding: 2rem;
+  color: var(--text2); font-size: 13px;
+}
+.dots { display: inline-flex; gap: 4px; }
+.dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1.2s infinite; }
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.15} 40%{opacity:1} }
+
+@media(max-width:600px) {
+  .sliders-row { grid-template-columns: 1fr; }
+  .scores-row { display: none; }
+  h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-line">
+      <div class="logo-dot"></div>
+      <span class="logo-text">NourOil · AI Content Engine</span>
+      <div class="logo-dot"></div>
+    </div>
+    <h1>مولّد المحتوى <span>الذكي</span></h1>
+    <p class="sub">Automotive Commerce Infrastructure · مصر والشرق الأوسط</p>
+  </div>
+
+  <!-- Controls Panel -->
+  <div class="panel">
+    <div class="panel-title">إعدادات المحتوى</div>
+    <div class="controls-grid">
+      <div class="field">
+        <label>نوع المحتوى</label>
+        <select id="type">
+          <option value="reel">🎬 Reel Script</option>
+          <option value="post">📘 Facebook Post</option>
+          <option value="whatsapp">💬 رسالة واتساب</option>
+          <option value="hook">🪝 5 Hooks</option>
+          <option value="carousel">🖼 Carousel Content</option>
+          <option value="video">🎥 Short Video Script</option>
+          <option value="founder">✍️ Founder-Led Post</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>الجمهور</label>
+        <select id="audience">
+          <option value="workshop">🔧 أصحاب الورش</option>
+          <option value="traders">🏪 تجار الزيوت</option>
+          <option value="distributors">🚚 الموزعين</option>
+          <option value="car-owners">🚗 أصحاب السيارات</option>
+          <option value="fleet">🚌 أصحاب الأساطيل</option>
+          <option value="spare-parts">⚙️ تجار قطع الغيار</option>
+          <option value="service-center">🏢 مراكز الخدمة</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>المشكلة</label>
+        <select id="problem">
+          <optgroup label="💰 أسعار وتكلفة">
+            <option value="price-change">الأسعار بتتغير بدون إشعار</option>
+            <option value="hidden-fees">رسوم خفية عند الشراء</option>
+            <option value="no-price-list">مفيش قائمة أسعار واضحة</option>
+          </optgroup>
+          <optgroup label="🛢 جودة المنتج">
+            <option value="fake">الزيوت المغشوشة</option>
+            <option value="wrong-grade">الزيت الغلط للموديل</option>
+            <option value="expiry">تواريخ صلاحية مشكوك فيها</option>
+          </optgroup>
+          <optgroup label="⏱ وقت وخدمة">
+            <option value="delay">تأخير الردود ساعات أو أيام</option>
+            <option value="no-stock">نفاد الكميات فجأة</option>
+            <option value="hard-compare">صعوبة مقارنة الزيوت</option>
+            <option value="search">البحث عن بدائل جيدة</option>
+            <option value="supplier-trust">صعوبة الثقة في المورد</option>
+            <option value="no-digital">مفيش حضور رقمي للمورد</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tone selector -->
+    <div style="margin-top:14px">
+      <div class="panel-title" style="margin-bottom:8px">أسلوب المحتوى</div>
+      <div class="tone-row" id="tone-row">
+        <button class="tone-chip active" data-tone="founder">Founder-Led</button>
+        <button class="tone-chip" data-tone="educational">تعليمي</button>
+        <button class="tone-chip" data-tone="urgent">عاجل</button>
+        <button class="tone-chip" data-tone="story">قصة</button>
+        <button class="tone-chip" data-tone="authority">سلطة خبرة</button>
+        <button class="tone-chip" data-tone="curiosity">فضول</button>
+      </div>
+    </div>
+
+    <!-- Sliders -->
+    <div class="sliders-row">
+      <div class="slider-field">
+        <label>الحدة العاطفية <span id="emotion-val">70%</span></label>
+        <input type="range" id="emotion" min="20" max="100" value="70"
+          oninput="document.getElementById('emotion-val').textContent=this.value+'%'">
+      </div>
+      <div class="slider-field">
+        <label>مستوى الجمهور <span id="audience-val">متوسط</span></label>
+        <input type="range" id="audience-level" min="1" max="3" value="2"
+          oninput="updateAudienceLabel(this.value)">
+      </div>
+    </div>
+
+    <button class="gen-btn" id="genbtn" onclick="generate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      ولّد محتوى ذكي ↗
+    </button>
+  </div>
+
+  <!-- Spinner Words Preview -->
+  <div class="panel">
+    <div class="panel-title">Spinner Words المختارة</div>
+    <div class="spinner-preview" id="spinner-preview">
+      <!-- filled on generate -->
+    </div>
+  </div>
+
+  <!-- Output -->
+  <div class="output-section">
+    <div id="output">
+      <div class="empty-state">
+        <div class="empty-icon">⚡</div>
+        اختار الإعدادات واضغط "ولّد محتوى" — كلود هيكتبلك المحتوى هنا
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="history-section" id="history-section" style="display:none">
+    <div class="history-title">المحتوى السابق</div>
+    <div class="history-chips" id="history-chips"></div>
+  </div>
+
+</div>
+
+<script>
+const SPINNERS = [
+  { en:"Architecting", ar:"نبني من الأساس", effect:"يوحي بالتأسيس والرؤية البعيدة", ctx:"للحديث عن بناء المنصة" },
+  { en:"Scaling",      ar:"بنكبّر الشغل",   effect:"يوحي بالنمو والتوسع",           ctx:"للتجار والموزعين" },
+  { en:"Accelerating", ar:"بنسرّع الخطوة",  effect:"يخلق إحساس بالسرعة والزخم",     ctx:"للـ Hooks والفتحات" },
+  { en:"Transforming", ar:"بنغيّر الصورة",  effect:"تحول جذري وليس مجرد تحسين",     ctx:"لمقارنة قبل/بعد" },
+  { en:"Optimizing",   ar:"بنحسّن كل تفصيلة",effect:"دقة واهتمام بالتفاصيل",        ctx:"للعمليات والكفاءة" },
+  { en:"Boosting",     ar:"بنرفع المستوى",  effect:"طاقة وحيوية ونتائج أسرع",       ctx:"للأداء والمبيعات" },
+  { en:"Fueling",      ar:"بنوقود الطموح",  effect:"يربط المنتج بالطاقة والحركة",    ctx:"استعارة قوية للزيوت" },
+  { en:"Driving",      ar:"بنقود التغيير",  effect:"قيادة وسيطرة وتوجيه",           ctx:"لقصص النجاح" },
+  { en:"Powering",     ar:"بنشغّل المستقبل",effect:"قوة وموثوقية وضمان الاستمرار",   ctx:"للبنية التحتية" },
+  { en:"Engineering",  ar:"بنهندس الحل",    effect:"خبرة تقنية ودقة",               ctx:"للمنتجات التقنية" },
+  { en:"Streamlining", ar:"بنبسّط الشغل",   effect:"إزالة التعقيد وتوفير الوقت",    ctx:"لحل مشاكل الروتين" },
+  { en:"Automating",   ar:"بنأتمت الروتين", effect:"تحرير من المهام المتكررة",       ctx:"للكفاءة التشغيلية" },
+  { en:"Elevating",    ar:"بنرفع السقف",    effect:"ارتقاء ومكانة أعلى",            ctx:"للعلامة التجارية" },
+  { en:"Revolutionizing",ar:"بنقلب الموازين",effect:"تغيير جذري يكسر التوقعات",     ctx:"للـ Bold Claims" },
+  { en:"Unlocking",    ar:"بنفتح الأبواب",  effect:"وصول لشيء كان ممنوع أو صعب",   ctx:"للفرص والإمكانيات" },
+  { en:"Maximizing",   ar:"بنعظّم الاستفادة",effect:"استغلال أقصى قدر من القيمة",   ctx:"للـ ROI والعوائد" },
+  { en:"Supercharging",ar:"بنضخ طاقة جديدة",effect:"قفزة نوعية مفاجئة",            ctx:"للإعلانات الجريئة" },
+  { en:"Integrating",  ar:"بنوحّد الأدوات", effect:"نهاية للتشتت والفوضى",         ctx:"للمنصات الشاملة" },
+];
+
+const PROBLEMS = {
+  "price-change":   "الأسعار بتتغير كل يوم وما فيش إشعار",
+  "hidden-fees":    "رسوم خفية بتطلع بعد الاتفاق",
+  "no-price-list":  "مفيش قائمة أسعار واضحة ومحدّثة",
+  "fake":           "الزيوت المغشوشة اللي بتخرب المحرك",
+  "wrong-grade":    "الزيت الغلط للموديل بيتباع كأنه صح",
+  "expiry":         "تواريخ صلاحية مشكوك فيها",
+  "delay":          "الردود بتتأخر ساعات أو أيام",
+  "no-stock":       "الكميات بتنفد فجأة من غير إنذار",
+  "hard-compare":   "صعوبة مقارنة الزيوت بالسعر الصح",
+  "search":         "البحث عن بدائل جيدة بنفس الجودة",
+  "supplier-trust": "صعوبة الثقة في المورد الجديد",
+  "no-digital":     "المورد مالوش أي حضور رقمي أو شفافية",
+};
+
+const AUDIENCES = {
+  "workshop":       "أصحاب الورش",
+  "traders":        "تجار الزيوت",
+  "distributors":   "الموزعين",
+  "car-owners":     "أصحاب السيارات",
+  "fleet":          "أصحاب الأساطيل",
+  "spare-parts":    "تجار قطع الغيار",
+  "service-center": "مراكز الخدمة",
+};
+
+const TYPES = {
+  reel:"Reel Script", post:"Facebook Post", whatsapp:"واتساب",
+  hook:"5 Hooks", carousel:"Carousel", video:"Video Script", founder:"Founder Post"
+};
+
+const TONES = {
+  founder:"Founder-Led", educational:"تعليمي", urgent:"عاجل",
+  story:"قصة", authority:"سلطة خبرة", curiosity:"فضول"
+};
+
+const AUDIENCE_LABELS = { 1:"مبتدئ", 2:"متوسط", 3:"خبير" };
+
+let selectedTone = "founder";
+let history = [];
+let lastContent = null;
+
+function updateAudienceLabel(v) {
+  document.getElementById('audience-val').textContent = AUDIENCE_LABELS[v];
+}
+
+document.getElementById('tone-row').addEventListener('click', e => {
+  const chip = e.target.closest('.tone-chip');
+  if (!chip) return;
+  document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  selectedTone = chip.dataset.tone;
+});
+
+function pickN(arr, n) {
+  return [...arr].sort(() => Math.random() - 0.5).slice(0, n);
+}
+
+function viralScore() { return Math.floor(Math.random() * 25 + 70); }
+function retentionScore() { return Math.floor(Math.random() * 20 + 72); }
+
+function renderSpinnerPreview(spinners) {
+  const el = document.getElementById('spinner-preview');
+  el.innerHTML = spinners.map(s => `
+    <div class="sp-card">
+      <div class="sp-en">${s.en}</div>
+      <div class="sp-ar">${s.ar}</div>
+      <div class="sp-effect">${s.effect}</div>
+    </div>`).join('');
+}
+
+function generate() {
+  const type      = document.getElementById('type').value;
+  const audKey    = document.getElementById('audience').value;
+  const probKey   = document.getElementById('problem').value;
+  const audience  = AUDIENCES[audKey];
+  const problem   = PROBLEMS[probKey];
+  const typeLabel = TYPES[type];
+  const tone      = TONES[selectedTone];
+  const emotion   = document.getElementById('emotion').value;
+  const audLevel  = AUDIENCE_LABELS[document.getElementById('audience-level').value];
+  const spinners  = pickN(SPINNERS, 4);
+  const viral     = viralScore();
+  const retention = retentionScore();
+
+  renderSpinnerPreview(spinners);
+
+  const spinnerBlock = spinners.map(s =>
+    `- ${s.en} (${s.ar}) — التأثير: ${s.effect} — سياق: ${s.ctx}`
+  ).join('\n');
+
+  lastContent = { type, typeLabel, audience, problem, tone, spinners, viral, retention };
+
+  // Show pending
+  document.getElementById('output').innerHTML = `
+    <div class="output-card">
+      <div class="output-topbar">
+        <div class="output-meta">
+          <span class="tag tag-green">${typeLabel}</span>
+          <span class="tag tag-amber">${audience}</span>
+          <span class="tag tag-gray">${tone}</span>
+        </div>
+      </div>
+      <div class="pending-state">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div style="margin-top:8px">كلود بيكتب المحتوى في المحادثة أدناه...</div>
+      </div>
+    </div>`;
+
+  const emotionDesc = emotion >= 80 ? "حدة عاطفية عالية جداً، استخدم كلمات قوية ومباشرة"
+    : emotion >= 60 ? "حدة عاطفية متوسطة، توازن بين العقل والعاطفة"
+    : "أسلوب هادئ ومنطقي أكثر من عاطفي";
+
+  const audLevelDesc = audLevel === "خبير"
+    ? "الجمهور متخصص — استخدم مصطلحات فنية وبيانات"
+    : audLevel === "مبتدئ"
+    ? "الجمهور مبتدئ — بسّط المصطلحات واشرح الفوائد"
+    : "جمهور متوسط — اجمع بين البساطة والعمق";
+
+  const prompt = `أنت AI Marketing Engine متخصص في Automotive Commerce لمنصة NourOil.
+الموقع: https://nouroil.nouroil.workers.dev/
+
+اكتب ${typeLabel} تسويقي احترافي باللهجة المصرية.
+
+الإعدادات:
+- الجمهور: ${audience} (${audLevelDesc})
+- المشكلة: ${problem}
+- الأسلوب: ${tone}
+- ${emotionDesc}
+
+Spinner Words (استخدمها بشكل طبيعي وعضوي):
+${spinnerBlock}
+
+القواعد الأساسية:
+- مش بيع مباشر — الجمهور يحس إن المحتوى ده ليه مش إعلان
+- ركّز على: السرعة، الثقة، الذكاء، سهولة الوصول، التحول الرقمي
+- Problem → Emotion → Solution → CTA
+- الـ CTA يوجّه لـ nouroil.nouroil.workers.dev أو واتساب
+
+اكتب بهذا الشكل بالضبط (بدون أي مقدمة):
+
+**HOOK:**
+...
+
+**BODY:**
+...
+
+**CTA:**
+...
+
+**SPINNER WORDS USED:**
+(اذكر كل كلمة مع معناها العربي)`;
+
+  // Save to history
+  history.unshift({ label: `${typeLabel} · ${audience}`, content: lastContent });
+  if (history.length > 8) history.pop();
+  renderHistory();
+
+  callClaude(prompt, { typeLabel, audience, tone, viral, retention });
+}
+
+async function callClaude(prompt, meta) {
+  const btn = document.getElementById('genbtn');
+  btn.disabled = true;
+
+  // Show streaming card
+  document.getElementById('output').innerHTML = `
+    <div class="output-card" id="result-card">
+      <div class="output-topbar">
+        <div class="output-meta">
+          <span class="tag tag-green">${meta.typeLabel}</span>
+          <span class="tag tag-amber">${meta.audience}</span>
+          <span class="tag tag-gray">${meta.tone}</span>
+        </div>
+        <div class="scores-row">
+          <div class="score-item"><span class="score-label">Viral</span><span class="score-value score-viral">${meta.viral}</span></div>
+          <div class="score-item"><span class="score-label">Ret.</span><span class="score-value score-retention">${meta.retention}</span></div>
+        </div>
+      </div>
+      <div class="output-body">
+        <div id="stream-output" class="sec-text" style="min-height:80px;white-space:pre-wrap;"></div>
+      </div>
+      <div class="action-bar" id="action-bar" style="display:none">
+        <button class="act-btn" onclick="copyOutput()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          نسخ
+        </button>
+      </div>
+    </div>`;
+
+  const streamEl = document.getElementById('stream-output');
+  let fullText = '';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        stream: true,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      streamEl.textContent = `❌ خطأ: ${err.error?.message || response.statusText}`;
+      btn.disabled = false;
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim();
+        if (data === '[DONE]') break;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            fullText += parsed.delta.text;
+            streamEl.textContent = fullText;
+          }
+        } catch {}
+      }
+    }
+
+    document.getElementById('action-bar').style.display = 'flex';
+    lastContent.generatedText = fullText;
+
+  } catch (err) {
+    streamEl.textContent = `❌ فشل الاتصال: ${err.message}`;
+  }
+
+  btn.disabled = false;
+}
+
+function copyOutput() {
+  const text = document.getElementById('stream-output')?.textContent || '';
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target.closest('.act-btn');
+    btn.classList.add('success');
+    btn.textContent = '✓ تم النسخ';
+    setTimeout(() => { btn.classList.remove('success'); btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> نسخ`; }, 2000);
+  });
+}
+
+function renderHistory() {
+  if (history.length < 2) return;
+  document.getElementById('history-section').style.display = 'block';
+  const chips = document.getElementById('history-chips');
+  chips.innerHTML = history.slice(1).map((h, i) =>
+    `<button class="h-chip" onclick="recallHistory(${i+1})">${h.label}</button>`
+  ).join('');
+}
+
+function recallHistory(idx) {
+  const h = history[idx];
+  if (!h) return;
+  const c = h.content;
+  renderSpinnerPreview(c.spinners);
+  document.getElementById('output').innerHTML = `
+    <div class="output-card">
+      <div class="output-topbar">
+        <div class="output-meta">
+          <span class="tag tag-green">${c.typeLabel}</span>
+          <span class="tag tag-amber">${c.audience}</span>
+          <span class="tag tag-gray">${c.tone}</span>
+        </div>
+        <div class="scores-row">
+          <div class="score-item"><span class="score-label">Viral</span><span class="score-value score-viral">${c.viral}</span></div>
+          <div class="score-item"><span class="score-label">Ret.</span><span class="score-value score-retention">${c.retention}</span></div>
+        </div>
+      </div>
+      <div class="pending-state" style="color:var(--text3)">
+        المحتوى موجود في المحادثة أعلاه ↑
+      </div>
+    </div>`;
+}
+
+// Initialize spinner preview
+renderSpinnerPreview(pickN(SPINNERS, 4));
+</script>
+</body>
+</html>
